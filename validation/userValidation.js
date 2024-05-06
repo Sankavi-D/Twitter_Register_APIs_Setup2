@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const moment = require('moment');
 
 // Validation schema for user password register
 const userSchema = Joi.object({
@@ -8,7 +9,13 @@ const userSchema = Joi.object({
       'any.required': 'Name is required: Cannot be empty'
     }).strict(),
     email: Joi.string().email().required(),
-    dob: Joi.date().iso().required()
+    dob: Joi.date().iso().required().custom((value, helpers) => {
+      // Custom validation to ensure date is in the format YYYY-MM-DD
+      if (!moment(value).isValid()) {
+        return helpers.message('Invalid date format');
+      }
+      return moment.utc(value).format('YYYY-MM-DD'); // Format date to YYYY-MM-DD without time component
+    })
   });
 
 const userValidationSchema = (req, res, next) => {
