@@ -23,15 +23,36 @@ const UserSchema = mongoose.Schema({
         unique: true, // Ensure usernames are unique
         sparse: true // Allow null values to coexist in unique index
     },
+    notification: {
+        type: Boolean,
+        required: false
+    },
+    languageId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Language' // Reference to the Language model
+    },
+    categoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category' // Reference to the Category model
+    },
+    subcategoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subcategory' // Reference to the Category model
+    },
+    following: [
+        { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'User' 
+        }
+    ], // Array of users this user is following
+    followers: [
+        { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'User' 
+        }
+    ] // Array of users following this user
+
 });
-
-
-// Middleware to format the date before saving to the database
-UserSchema.pre('save', function(next) {
-    // Ensure only the date part is stored without the time component
-    this.dob = new Date(this.dob.toISOString().split('T')[0]);
-    next();
-  });
 
 const User = mongoose.model('User', UserSchema);
 

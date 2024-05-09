@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userValidationSchema = require('../validation/userValidation');
-const { userRegister, userEmailVerify, passwordSetup, uploadProfileImage, suggestUsername, usernameSetup } = require('../controllers/auth.controller');
+const { userRegister, userEmailVerify, passwordSetup, uploadProfileImage, suggestUsername, usernameSetup, notificationSetup, selectLanguage } = require('../controllers/auth.controller');
 const passwordValidationSchema = require('../validation/passwordValidation');
 const profileImageValidationSchema = require('../validation/profilePictureValidation');
 const usernameValidationSchema = require('../validation/usernameValidation');
+const notificationValidationSchema = require('../validation/notificationValidation');
 
 const upload = require('../middleware/multer');
 
@@ -25,5 +26,8 @@ router.post('/suggest-username', suggestUsername);
 
 // Unique username setup
 router.post('/username-setup', usernameValidationSchema, usernameSetup);
+
+// Notification Permission
+router.post('/notification', notificationValidationSchema, notificationSetup);
 
 module.exports = router;

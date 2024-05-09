@@ -3,7 +3,7 @@ const User = require('./models/userModel');
 
 // Generate JWT token for email verification
 const generateVerificationToken = (email) => {
-  return jwt.sign({ email }, "MY_SECRET_TOKEN", { expiresIn: '1h' }); // Change the expiry as needed
+  return jwt.sign({ email }, "MY_SECRET_TOKEN", { expiresIn: '24h' }); // Change the expiry as needed
 };
 
 // Verify email function

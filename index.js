@@ -1,6 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth.route');
+const languageRoutes = require('./routes/language.route');
+const categoryRoutes = require('./routes/category.route');
+const subcategoryRoutes = require('./routes/subcategory.route');
+const followRoutes = require('./routes/follow.route');
 const app = express();
 
 // Middleware for parsing JSON bodies
@@ -24,6 +28,10 @@ mongoose.connect(MONGODB_URI, {
     });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/languages', languageRoutes);
+app.use('/api/auth/category', categoryRoutes);
+app.use('/api/auth/subcategory', subcategoryRoutes);
+app.use('/api/auth/follow', followRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to Twitter App');

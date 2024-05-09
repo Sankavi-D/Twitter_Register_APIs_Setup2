@@ -57,11 +57,10 @@ const passwordSetup = async (req, res) => {
 const uploadProfileImage = async (req, res) => {
   try {
     console.log("DB Image storing function initiated");
-    // Setup Profile Image
     const image = req.file.path; // Get the path of the uploaded image
-    const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
+    const token = req.headers.authorization.split(' ')[1]; 
 
-    // Decode the JWT token to get the user's _id
+
     const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Specify your secret key here
     const userEmail = decodedToken.email;
     console.log(decodedToken);
@@ -114,7 +113,6 @@ const suggestUsername = async (req, res) => {
       res.status(500).json({ message: 'Error generating username suggestions' });
   }
 };
-
 
 const usernameSetup = async (req, res) => {
   try {
@@ -185,11 +183,48 @@ const checkAvailability = async (username) => {
   }
 };
 
+const notificationSetup = async (req, res) => {
+  try {
+    console.log("Notification setup started");
+   
+    const { notification } = req.body;
+    const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
+
+    // Decode the JWT token to extract the email
+    const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN');
+    const userEmail = decodedToken.email;
+    console.log(decodedToken);
+
+    // Find the user in the User database collection based on the email
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update the user's notification preference
+    user.notification = notification;
+    await user.save();
+
+    let notificationPermission;
+    if (notification) {
+      notificationPermission = "Notification Allowed";
+    } else {
+      notificationPermission = "Notification Blocked";
+    }
+    console.log(notificationPermission);
+  
+    res.json({ user, notificationPermission });
+  } catch (error) {
+    res.status(500).json({ error: error.details[0].message });
+  }
+};
+
 module.exports = {
   userRegister,
   userEmailVerify,
   passwordSetup,
   uploadProfileImage,
   suggestUsername,
-  usernameSetup
+  usernameSetup,
+  notificationSetup
 };
