@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const categoryValidationSchema = require('../validation/categoryValidation');
 const { createCategory, gettingAllCategory, getOneCategory, updateCategory, deleteCategory } = require('../controllers/category.controller');
+const { authenticateToken } = require('../middleware/authentication');
 
 // Create Operation: Create a new category
-router.post('/', categoryValidationSchema, createCategory);
+router.post('/', categoryValidationSchema, authenticateToken, createCategory);
 
 // Read Operation: Get all categorys
 router.get('/', gettingAllCategory);

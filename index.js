@@ -1,15 +1,21 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const authRoutes = require('./routes/auth.route');
 const languageRoutes = require('./routes/language.route');
 const categoryRoutes = require('./routes/category.route');
 const subcategoryRoutes = require('./routes/subcategory.route');
 const followRoutes = require('./routes/follow.route');
+const profileRoutes = require('./routes/profile.route');
 const app = express();
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve static files from the 'uploads' directory
+const imagePath = path.join(__dirname, '/uploads');
+app.use(express.static(imagePath));
 
 require('dotenv').config();
 const PORT = process.env.PORT || 6000;
@@ -32,6 +38,7 @@ app.use('/api/auth/languages', languageRoutes);
 app.use('/api/auth/category', categoryRoutes);
 app.use('/api/auth/subcategory', subcategoryRoutes);
 app.use('/api/auth/follow', followRoutes);
+app.use('/api/auth/profile', profileRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to Twitter App');

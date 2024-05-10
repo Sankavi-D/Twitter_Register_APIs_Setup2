@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const languageValidationSchema = require('../validation/languageValidation');
 const { createLanguage, gettingAllLanguage, getOneLanguage, updateLanguage, deleteLanguage } = require('../controllers/language.controller');
+const { authenticateToken } = require('../middleware/authentication');
 
 // Create Operation: Create a new language
-router.post('/', languageValidationSchema, createLanguage);
+router.post('/', languageValidationSchema, authenticateToken, createLanguage);
 
 // Read Operation: Get all languages
 router.get('/', gettingAllLanguage);

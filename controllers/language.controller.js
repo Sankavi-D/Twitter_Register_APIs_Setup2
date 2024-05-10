@@ -6,18 +6,9 @@ const jwt = require('jsonwebtoken');
 const createLanguage = async (req, res) => {
     try {
         console.log("Creating Language");
-        const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
-
-        // Decode the JWT token to get the user's _id
-        const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Specify your secret key here
-        const userEmail = decodedToken.email;
-        console.log(decodedToken);
-
-        // Find the user in the User database collection based on the email
+        
+        const userEmail = req.user.email;
         const user = await User.findOne({ email: userEmail });
-        if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-        }
 
         const { name, status } = req.body;
         const language = new Language({ name, status });

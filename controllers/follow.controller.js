@@ -19,19 +19,9 @@ const getRegisteredUsers = async (req, res) => {
 const followUsers = async (req, res) => {
     try {
         console.log("Following users");
-        const token = req.headers.authorization.split(' ')[1];
-
-        // Decode the JWT token to extract user information
-        const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN');
-        const userEmail = decodedToken.email;
-        console.log(decodedToken);
-
-        // Find the user in the User database collection based on the email
+        
+        const userEmail = req.user.email;
         const user = await User.findOne({ email: userEmail });
-        console.log(user);
-        if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-        }
 
         const { userIds } = req.body; // Extract user IDs from the request body
         

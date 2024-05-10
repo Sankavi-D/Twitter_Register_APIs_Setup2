@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const Password = require('../models/passwordModel');
 const ProfileImage = require('../models/profilePicture');
-const { generateVerificationToken, verifyEmail } = require('../emailVerification');
+const { authentication, verifyEmail } = require('../middleware/authentication');
 
 const userRegister =  async (req, res) => {
   try {
@@ -20,7 +20,7 @@ const userRegister =  async (req, res) => {
 
     // Generate verification token
     console.log("Email Verification Started");
-    const verificationToken = generateVerificationToken(email);
+    const verificationToken = jwt.sign({ email }, "MY_SECRET_TOKEN", { expiresIn: '24h' });
     console.log('Verification token:', verificationToken);
 
     res.json({user, verificationToken });
@@ -43,10 +43,17 @@ const userEmailVerify = async (req, res) => {
 const passwordSetup = async (req, res) => {
   console.log("Password Setup Initiated");
   try {
+    const userEmail = req.user.email;
+    const user = await User.findOne({ email: userEmail });
+
     const { password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const passwordCreated = await Password.create({ password: hashedPassword });
     await passwordCreated.save();
+    
+    // After creating the category, update users' categoryId
+    user.passwordId = passwordCreated._id;
+    await user.save();
       
     res.status(200).json({ message: 'Password setup successful' });
     } catch (error) {
@@ -58,18 +65,8 @@ const uploadProfileImage = async (req, res) => {
   try {
     console.log("DB Image storing function initiated");
     const image = req.file.path; // Get the path of the uploaded image
-    const token = req.headers.authorization.split(' ')[1]; 
-
-
-    const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Specify your secret key here
-    const userEmail = decodedToken.email;
-    console.log(decodedToken);
-
-    // Find the user in the User database collection based on the email
+    const userEmail = req.user.email;
     const user = await User.findOne({ email: userEmail });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
 
     // Create a new profile image associated with the user's _id
     const profileImage = new ProfileImage({ image, userId: user._id });
@@ -90,18 +87,8 @@ const uploadProfileImage = async (req, res) => {
 const suggestUsername = async (req, res) => {
   try {
       console.log("Username suggestion started");
-      const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
-
-        // Decode the JWT token to extract the email
-        const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN');
-        const userEmail = decodedToken.email;
-        console.log(decodedToken);
-
-        // Find the user in the User database collection based on the email
-        const user = await User.findOne({ email: userEmail });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+      const userEmail = req.user.email;
+      const user = await User.findOne({ email: userEmail });
 
         // Generate username suggestions based on user's name and email
         const usernameSuggestions = generateUsernameSuggestions(user.name, user.email);
@@ -118,18 +105,8 @@ const usernameSetup = async (req, res) => {
   try {
       console.log("Username setup started");
       const { username } = req.body;
-      const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
-
-      // Decode the JWT token to extract the userId
-      const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Replace 'your_secret_key_here' with your actual secret key
-      const userEmail = decodedToken.email;
-      console.log(decodedToken);
-
-      // Find the user in the User database collection based on the email
-      const user = await User.findOne({ email: userEmail });
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+      const token = req.headers.authorization.split(' ')[1];
+      const user = await authentication(token);
 
       // Check if the entered username is available in the database
       const isUsernameAvailable = await checkAvailability(username);
@@ -168,16 +145,12 @@ const generateUsernameSuggestions = (name, email) => {
 const checkAvailability = async (username) => {
   try {
     console.log("Checking for username availability...")
-    // Check if the username already exists in the User database collection
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-        // If the username exists, return false to indicate it's not available
         return false;
     }
-    // If the username doesn't exist, return true to indicate availability
     return true;
   } catch (error) {
-    // If an error occurs during the database operation, handle it here
     console.error('Error checking username availability:', error);
     throw new Error('Error checking username availability');
   }
@@ -188,19 +161,10 @@ const notificationSetup = async (req, res) => {
     console.log("Notification setup started");
    
     const { notification } = req.body;
-    const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
-
-    // Decode the JWT token to extract the email
-    const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN');
-    const userEmail = decodedToken.email;
-    console.log(decodedToken);
-
-    // Find the user in the User database collection based on the email
+    
+    const userEmail = req.user.email;
     const user = await User.findOne({ email: userEmail });
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
-
+    
     // Update the user's notification preference
     user.notification = notification;
     await user.save();

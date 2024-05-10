@@ -1,3 +1,4 @@
+const { use } = require('..');
 const Subcategory = require('../models/subcategoryModel');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
@@ -6,19 +7,21 @@ const jwt = require('jsonwebtoken');
 const createSubcategory = async (req, res) => {
     try {
         console.log("Creating Subcategory");
-        const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
+        // const token = req.headers.authorization.split(' ')[1]; // Assuming JWT token is passed in Authorization header
 
-        // Decode the JWT token to get the user's _id
-        const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Specify your secret key here
-        const userEmail = decodedToken.email;
-        console.log(decodedToken);
+        // // Decode the JWT token to get the user's _id
+        // const decodedToken = jwt.verify(token, 'MY_SECRET_TOKEN'); // Specify your secret key here
+        // const userEmail = decodedToken.email;
+        // console.log(decodedToken);
 
-        // Find the user in the User database collection based on the email
+        // // Find the user in the User database collection based on the email
+        // const user = await User.findOne({ email: userEmail });
+        // if (!user) {
+        // return res.status(404).json({ message: 'User not found' });
+        // }
+        const userEmail = req.user.email;
         const user = await User.findOne({ email: userEmail });
-        if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-        }
-
+        
         const { subcategoryName, categoryId } = req.body;
         const subcategory = new Subcategory({ subcategoryName, categoryId });
         const savedSubcategory = await subcategory.save();

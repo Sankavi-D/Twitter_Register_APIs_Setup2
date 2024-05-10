@@ -14,6 +14,10 @@ const UserSchema = mongoose.Schema({
         type: Date, 
         required: true,
     },
+    passwordId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Password'
+    },
     imageId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'ProfileImage' // Reference to the ProfileImage model

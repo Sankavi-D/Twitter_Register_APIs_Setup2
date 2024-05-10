@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const subcategoryValidationSchema = require('../validation/subcategoryValidation');
 const { createSubcategory, gettingAllSubcategory, getSubcategoriesByCategory, updateSubcategory, deleteSubcategory } = require('../controllers/subcategory.controller');
+const { authenticateToken } = require('../middleware/authentication');
 
 // Create Operation: Create a new subcategory
-router.post('/', subcategoryValidationSchema, createSubcategory);
+router.post('/', subcategoryValidationSchema, authenticateToken, createSubcategory);
 
 // Read Operation: Get all subcategorys
 router.get('/', gettingAllSubcategory);
