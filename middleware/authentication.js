@@ -1,49 +1,37 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
-// Verify email function
-const verifyEmail = async (token) => {
-  if (!token) {
-    throw new Error('Token is required');
-  }
-
+const authenticateToken = async (req, res, next) => {
   try {
-    // Verify the token
-    const decoded = jwt.verify(token, "MY_SECRET_TOKEN");
-
-    // Check if the email exists in the database
-    const user = await User.findOne({ email: decoded.email });
-    if (!user) {
-      throw new Error('User not found');
+    console.log("Authenticating...");
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ status_code: 401, message: 'Unauthorized: Token is required' });
     }
+    const secretKey = process.env.JWT_SECRET;
+    
+    try {
+    const decoded = jwt.verify(token, secretKey);
+    req.user = decoded;
+    const userEmail = req.user.email;
+    const user = await User.findOne({ email: userEmail });
 
-    return user; // Return the user if verification is successful
-  } catch (err) {
-    throw new Error('Invalid token');
-  }
-};
-
-
-const authenticateToken = (req, res, next) => {
-  console.log("Authenticating...");
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-  jwt.verify(token, 'MY_SECRET_TOKEN', (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(403).json({ status_code: 403, message: 'User not found' });
     }
 
     req.user = user;
-
+      
     next();
-  });
+    } catch (err) {
+      return res.status(403).json({ status_code: 403, message: 'Invalid token' });
+    }
+  } catch (error) {
+      console.error('Error:', error.message);
+      return res.status(500).json({ status_code: 500, message: 'Internal server error' });
+    }
 };
 
-module.exports = {
-  verifyEmail,
-  authenticateToken
-};
+module.exports = authenticateToken;
 

@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const path = require('path');
 const User = require('../models/userModel');
 
@@ -7,8 +6,7 @@ const profileSetup = async (req, res) => {
     try {
         console.log("Profile Populated");
         
-        const userEmail = req.user.email;
-        const user = await User.findOne({ email: userEmail });
+        const user = req.user;
 
         // Find the user profile by user ID
         const userId = user._id;
@@ -17,15 +15,17 @@ const profileSetup = async (req, res) => {
             .populate('imageId')
             .populate('languageId')
             .populate('categoryId')
-            .populate('subcategoryId');
+            .populate('subcategoryId')
+            .populate('profile');
 
         // Send the populated user profile in the response
-        res.status(200).json(userProfile);
+        res.status(200).json({ status_code: 200, userProfile });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ status_code: 500, message: 'Internal server error' });
     }
 };
+
 
 // Handle GET request to display the uploaded image
 const displayProfileImage = async (req, res) => {
@@ -40,11 +40,36 @@ const displayProfileImage = async (req, res) => {
         res.sendFile(imagePath);
     } catch (error) {
       console.error('Error fetching image:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ status_code: 500, error: 'Internal server error' });
     }
 };
 
+// Aggregation Method
+const getUserData = async (req, res) => {
+    try {
+        console.log("Aggregation Method Started...");
+        
+        const user = req.user;
+
+        const userId = user._id;
+        console.log('User ID: ', userId);
+  
+        const aggregationResult = await User.aggregate([
+            {
+                $match: { _id: userId }
+            }
+        ]);
+    
+      res.status(200).json({ status_code: 200, aggregationResult });
+    } catch (error) {
+      console.error('Error counting followers:', error);
+      res.status(500).json({ status_code: 500, error: 'Internal server error' });
+    }
+};
+
+
 module.exports = {
     profileSetup,
-    displayProfileImage
+    displayProfileImage,
+    getUserData
 };

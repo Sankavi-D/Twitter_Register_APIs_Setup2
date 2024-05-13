@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 
-const ProfilePictureSchema = mongoose.Schema(
+const ProfilePictureSchema = new mongoose.Schema(
     {
-        image: {
-            type: String,
-            required: false
-        },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true
-        }
+        },
+        profileImageId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Image'
+          },     
     },
     
     {

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const categoryValidationSchema = require('../validation/categoryValidation');
+// const categoryValidationSchema = require('../validation/categoryValidation');
+const authenticateToken = require('../middleware/authentication');
 const { createCategory, gettingAllCategory, getOneCategory, updateCategory, deleteCategory } = require('../controllers/category.controller');
-const { authenticateToken } = require('../middleware/authentication');
+const { categoryValidation } = require('../validation/validateFunction');
 
 // Create Operation: Create a new category
-router.post('/', categoryValidationSchema, authenticateToken, createCategory);
+router.post('/', categoryValidation, authenticateToken, createCategory);
 
 // Read Operation: Get all categorys
 router.get('/', gettingAllCategory);
@@ -14,7 +15,7 @@ router.get('/', gettingAllCategory);
 router.get('/:id', getOneCategory);
 
 // Update Operation: Update a category by ID
-router.put('/:id', categoryValidationSchema, updateCategory);
+router.put('/:id', categoryValidation, updateCategory);
 
 // Delete Operation: Delete a category by ID
 router.delete('/:id', deleteCategory);

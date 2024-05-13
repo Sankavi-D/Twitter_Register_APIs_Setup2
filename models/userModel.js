@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UserSchema = mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     name: { 
         type: String, 
         required: true
@@ -14,13 +14,17 @@ const UserSchema = mongoose.Schema({
         type: Date, 
         required: true,
     },
-    passwordId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Password'
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    password: {
+        type: String,
+        required: true
     },
     imageId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'ProfileImage' // Reference to the ProfileImage model
+        ref: 'Image' // Reference to the Image model
     },
     username: {
         type: String,
@@ -54,7 +58,11 @@ const UserSchema = mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'User' 
         }
-    ] // Array of users following this user
+    ], // Array of users following this user
+    profile: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProfileImage' // Reference to the Category model
+    }
 
 });
 

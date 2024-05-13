@@ -1,14 +1,11 @@
 const Category = require('../models/categoryModel');
-const User = require('../models/userModel');
-const jwt = require('jsonwebtoken');
 
 // Create Operation: Create a new Category
 const createCategory = async (req, res) => {
     try {
         console.log("Creating Category");
         
-        const userEmail = req.user.email;
-        const user = await User.findOne({ email: userEmail });
+        const user = req.user;
 
         const { categoryName } = req.body;
         const category = new Category({ categoryName });
@@ -18,10 +15,10 @@ const createCategory = async (req, res) => {
         user.categoryId = category._id;
         await user.save();
 
-        res.status(201).json(savedCategory);
+        res.status(201).json({ status_code: 201, savedCategory });
     } catch (error) {
         console.error('Error creating category:', error);
-        res.status(500).json({ message: 'Error creating category' });
+        res.status(500).json({ status_code: 500, message: 'Error creating category' });
     }
 };
 
@@ -30,10 +27,10 @@ const gettingAllCategory = async (req, res) => {
     try {
         console.log("Getting All Categories");
         const categories = await Category.find();
-        res.status(200).json(categories);
+        res.status(200).json({ status_code: 200, categories });
     } catch (error) {
         console.error('Error fetching Categories:', error);
-        res.status(500).json({ message: 'Error fetching categories' });
+        res.status(500).json({ status_code: 500, message: 'Error fetching categories' });
     }
 };
 
@@ -43,12 +40,12 @@ const getOneCategory = async (req, res) => {
         console.log("Getting One Category");
         const category = await Category.findById(req.params.id);
         if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
+            return res.status(404).json({ status_code: 404, message: 'Category not found' });
         }
-        res.status(200).json(category);
+        res.status(200).json({ status_code: 200, category });
     } catch (error) {
         console.error('Error fetching category:', error);
-        res.status(500).json({ message: 'Error fetching category' });
+        res.status(500).json({ status_code: 500, message: 'Error fetching category' });
     }
 };
 
@@ -59,12 +56,12 @@ const updateCategory = async (req, res) => {
         const { categoryName } = req.body;
         const updatedCategory = await Category.findByIdAndUpdate(req.params.id, { categoryName }, { new: true });
         if (!updatedCategory) {
-            return res.status(404).json({ message: 'Category not found' });
+            return res.status(404).json({ status_code: 404, message: 'Category not found' });
         }
-        res.status(200).json(updatedCategory);
+        res.status(200).json({ status_code: 200, updatedCategory });
     } catch (error) {
         console.error('Error updating category:', error);
-        res.status(500).json({ message: 'Error updating category' });
+        res.status(500).json({ status_code: 500, message: 'Error updating category' });
     }
 };
 
@@ -74,12 +71,12 @@ const deleteCategory = async (req, res) => {
         console.log("Deleting a Category");
         const deletedCategory = await Category.findByIdAndDelete(req.params.id);
         if (!deletedCategory) {
-            return res.status(404).json({ message: 'Category not found' });
+            return res.status(404).json({ status_code: 404, message: 'Category not found' });
         }
-        res.status(200).json({ message: 'Category deleted successfully' });
+        res.status(200).json({ status_code: 200, message: 'Category deleted successfully' });
     } catch (error) {
         console.error('Error deleting Category:', error);
-        res.status(500).json({ message: 'Error deleting Category' });
+        res.status(500).json({ status_code: 500, message: 'Error deleting Category' });
     }
 };
 
