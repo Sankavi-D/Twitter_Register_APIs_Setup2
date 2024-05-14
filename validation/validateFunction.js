@@ -2,20 +2,27 @@ const Joi = require('joi');
 
 // Common validate function
 const validateSchema = (schema) => (req, res, next) => {
-    try {
-        // Validate request body against schema
-        console.log("Validating request body data...");
-    
-        const { error } = schema.validate(req.body);
-        if (error) {
-            const errorMessage = error.details.map(detail => detail.message).join(', ');
-            return res.status(400).json({ status_code: 400, message: errorMessage });
-        }
-        next();
+    console.log("Validating request body data...");
 
-    } catch (validationError) {
-        return res.status(500).json({ status_code: 500, message: 'Internal server error' });
+    const { error } = schema.validate(req.body);
+    if (error) {
+        const errorMessage = error.details.map(detail => detail.message).join(', ');
+        return res.status(400).json({ status_code: 400, message: errorMessage });
     }
+    next();
+};
+
+const validateImageSchema = (schema) => (req, res, next) => {
+    // Validate request body against schema
+    console.log("Validating request body data...");
+
+    const { error } = schema.validate(req.file);
+    if (error) {
+        const errorMessage = error.details.map(detail => detail.message).join(', ');
+        return res.status(400).json({ status_code: 400, message: errorMessage });
+    }
+    
+  next();
 };
 
 // Joi validation schema
@@ -25,8 +32,14 @@ const userSchema = Joi.object({
       'string.empty': 'Name is required: Cannot be empty',
       'any.required': 'Name is required: Cannot be empty'
     }).strict(),
-    email: Joi.string().email().required(),
-    dob: Joi.date().iso().required()
+    email: Joi.string().email().required().messages({
+      'string.email': `"email" must be a valid email`,
+      'any.required': `"email" is a required field`
+    }),
+    dob: Joi.string().isoDate().required().messages({
+      'string.isoDate': `"dob" must be a valid ISO date`,
+      'any.required': `"dob" is a required field`
+    })
   });
 
 const passwordSchema = Joi.object({
@@ -39,7 +52,11 @@ const passwordSchema = Joi.object({
 });
 
 const imageSchema = Joi.object({
-    image: Joi.string().allow('').optional()
+    image: Joi.string().required().messages({
+      'any.required': 'Image is required',
+      'string.base': 'Invalid image type'
+    }),
+    type: Joi.string().valid('profile', 'post').required()
 });
 
 const usernameSchema = Joi.object({
@@ -113,10 +130,17 @@ const userLoginSchema = Joi.object({
     })
 });
 
+const dateSchema = Joi.object({
+    dob: Joi.string().isoDate().required().messages({
+      'string.isoDate': 'dob must be a valid ISO date ex: 1990-12-25',
+      'any.required': 'dob is a required field'
+    })
+  });
+
 // Validating request body data
 const userRegisterValidation = validateSchema(userSchema);
 const passwordValidation = validateSchema(passwordSchema);
-const imageValidation = validateSchema(imageSchema);
+const imageValidation = validateImageSchema(imageSchema);
 const usernameValidation = validateSchema(usernameSchema);
 const notificationValidation = validateSchema(notificationSchema);
 const languageValidation = validateSchema(languageSelectionSchema);
@@ -125,6 +149,7 @@ const subcategoryValidation = validateSchema(subcategorySelectionSchema);
 const subcategoryUpdateValidation = validateSchema(subcategoryUpdateSchema);
 const followValidation = validateSchema(followSchema);
 const userLoginValidation = validateSchema(userLoginSchema);
+const dateValidation = validateSchema(dateSchema);
 
 module.exports = {
     userRegisterValidation,
@@ -137,5 +162,6 @@ module.exports = {
     subcategoryValidation,
     subcategoryUpdateValidation,
     followValidation,
-    userLoginValidation
+    userLoginValidation,
+    dateValidation
 };

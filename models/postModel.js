@@ -8,7 +8,7 @@ const PostSchema = new mongoose.Schema(
         },
         postImageId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'ProfileImage'
+            ref: 'Image'
         },
         title: {
             type: String,

@@ -7,6 +7,8 @@ const categoryRoutes = require('./routes/category.route');
 const subcategoryRoutes = require('./routes/subcategory.route');
 const followRoutes = require('./routes/follow.route');
 const profileRoutes = require('./routes/profile.route');
+const schedule = require('node-schedule');
+const updateAges = require('./services/cronServices');
 const app = express();
 
 // Middleware for parsing JSON bodies
@@ -16,6 +18,11 @@ app.use(express.urlencoded({ extended: false }));
 // Serve static files from the 'uploads' directory
 const imagePath = path.join(__dirname, '/uploads');
 app.use(express.static(imagePath));
+
+// Schedule task to update user ages daily at midnight (IST)
+const job = schedule.scheduleJob('0 0 * * *', async () => {
+    await updateAges();
+});
 
 require('dotenv').config();
 const PORT = process.env.PORT || 6000;

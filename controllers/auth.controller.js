@@ -11,23 +11,26 @@ const userRegister =  async (req, res) => {
   try {
     console.log("Registration Started");
     const { name, email, dob } = req.body;
-    
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ status_code: 400, message: 'Email already exists' });
     }
 
+    // const userId = await getNextSequenceValue('userId');
     const user = new User({ name, email, dob });
     await user.save();
 
     // Generate verification token
     const secretKey = process.env.JWT_SECRET;
+    console.log(secretKey);
     const verificationToken = jwt.sign({ _id: user._id, email }, secretKey, { expiresIn: '24h' });
     console.log('Verification token:', verificationToken);
 
-    res.status(200).json({user, verificationToken });
+    res.status(201).json({ status_code: 201, user, verificationToken });
   } catch (error) {
-    res.status(500).json({ error: error.details[0].message });
+    console.error('Error during registration:', error.message);
+    res.status(500).json({ status_code: 500, error: 'Registration failed' });
   }
 };
 
@@ -43,12 +46,12 @@ const userEmailVerify = async (req, res) => {
     const secretKey = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secretKey);
     console.log('decoded: ', decoded)
-    const user = await User.findOne({ email: decoded.email });
+    const user = await User.findOne({ _id: decoded._id});
     await User.findByIdAndUpdate(user._id, { isEmailVerified: true });
     
-    res.status(200).json({ status: 200, message: 'Email verified successfully!', user });
+    res.status(200).json({ status_code: 200, message: 'Email verified successfully!', user });
   } catch (error) {
-    res.status(401).json({ status: 401, message: error.message });
+    res.status(401).json({ status_code: 401, message: error.message });
   }
 };
 
@@ -56,20 +59,13 @@ const passwordSetup = async (req, res) => {
   console.log("Password Setup Initiated");
   try {
     const user = req.user;
-    // console.log("After auth user: ", user);
+    
     const { password } = req.body;
-    console.log(password);
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
-    // const createdPassword = 
     user.password = hashedPassword;
     await user.save();
-    
-    // After creating the category, update users' categoryId
-    // user.passwordId = passwordCreated._id;
-    // await user.save();
       
-    res.status(200).json({ status_code: 200, message: 'Password setup successful' });
+    res.status(201).json({ status_code: 201, message: 'Password setup successful' });
     } catch (error) {
       res.status(500).json({ status_code : 500, message: error.message });
     }
@@ -78,46 +74,63 @@ const passwordSetup = async (req, res) => {
 const uploadImage = async (req, res) => {
   try {
     console.log("DB Image storing function initiated");
-    const { type } = req.body;
-    const image = req.file.path; // Get the path of the uploaded image
     const user = req.user;
-    const userId = user._id;
+    const { type } = req.body;
+    const images = req.files.map(file => {
+      return {
+        userId: req.body.userId,
+        imageName: file.filename,
+        type: type
+      };
+    });
 
-    // Create a new image associated with the user's _id
-    const uploadedImage = new Image({ userId: userId, imageName: image, type: type });
-    await uploadedImage.save();
-    console.log(uploadedImage)
+    const savedImages = await Image.create(images);
 
-    // Update the user document with the imageId
-    user.imageId = uploadedImage._id;
-    await user.save();
-
-    // res.status(200).json(uploadedImage);
-    
-    let display;
-    // Update profile or post schema based on type
     if (type === 'profile') {
-      // console.log('image id is: ', uploadedImage._id);
-      // const profileImage = new Profile({ userId: userId, imageName: image, profileImageId: uploadedImage._id });
-      // await profileImage.save();
-      // console.log(profileImage);
-      // display = profileImage;
-      res.status(200).send(profileImage);
-      await Profile.findOneAndUpdate({ userId }, { profileImageId: image._id });
+      await Profile.findOneAndUpdate({ userId: user._id }, { profileImageId: savedImages._id });
       console.log(Profile);
     } else if (type === 'post') {
-      // const newPost = new Post({ userId: userId, imageName: image, postImageId: uploadedImage._id });
-      // await newPost.save();
-      // console.log(newPost);
-      // display = newPost;
-      await Post.findOneAndUpdate({ userId }, { postImageId: image._id });
+      await Post.findOneAndUpdate({ userId: user._id }, { postImageId: savedImages._id });
       console.log(`post: `, Post);
     }
 
-    res.status(200).json({ status_code: 200, message: 'Image uploaded successfully', display });
-    // res.status(200).send({ message: 'Image uploaded successfully', uploadImage });
+    console.log("Images saved successfully:", savedImages);
+    res.status(201).json({ status_code: 201, message: 'Images uploaded successfully', uploadedImages: savedImages });
   } catch (error) {
-    console.log("Error on storing image on db");
+    
+    console.log("Error on storing images in the database:", error);
+    res.status(500).json({ status_code: 500, message: error.message });
+  }
+};
+
+const uploadImageOld = async (req, res) => {
+  try {
+    console.log("DB Image storing function initiated");
+    const { type } = req.body;
+
+    const images = req.files.map(file => file.path); // Get an array of paths for the uploaded images
+   
+    const user = req.user;
+    const userId = user._id;
+
+    const savedImages = await new Image({ userId: userId, images, type });
+    console.log('saved images: ', savedImages);
+
+    // Update the user document with the imageIds
+    user.imageIds = savedImages._id;
+    await user.save();
+
+     // Update profile or post with the imageIds
+     if (type === 'profile') {
+      await Profile.findOneAndUpdate({ userId: user._id }, { profileImageIds: savedImages._id });
+    } else if (type === 'post') {
+      await Post.findOneAndUpdate({ userId }, { postImageIds: savedImages._id });
+    }
+
+  console.log("Images saved successfully:", savedImages);
+  res.status(201).json({ status_code: 201, message: 'Images uploaded successfully', uploadedImages: savedImages });
+  } catch (error) {
+    console.log("Error on storing images in the database:", error);
     res.status(500).json({ status_code: 500, message: error.message });
   }
 };
@@ -327,10 +340,14 @@ const userLogin = async (req, res) => {
 const createPost = async (req, res) => {
     try {
       console.log("Creating Post...");
+      const user = req.user;
+      console.log(user);
+
       const { title, description } = req.body;
+      console.log(req.body);
       // const image = req.file.path;
       
-      const user = req.user;
+      
       const postImageId = user.postImageId;
       console.log('postImageId: ', postImageId);
   
@@ -347,6 +364,30 @@ const createPost = async (req, res) => {
     }
 };
 
+// Function to update user's age
+const updateUserAge = async (req, res) => {
+  try {
+    console.log("DOB updatation started...");
+    const userId = req.params.userId;
+    const { dob } = req.body;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { dob },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ status_code: 404, message: 'User not found' });
+    }
+
+    res.status(200).json({ status_code: 200, message: 'User dob and age updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating user dob:', error.message);
+    res.status(500).json({ status_code: 500, error: 'Failed to update user dob' });
+  }
+};
+
 module.exports = {
   userRegister,
   userEmailVerify,
@@ -359,4 +400,5 @@ module.exports = {
   importUserData,
   userLogin,
   createPost,
+  updateUserAge
 };

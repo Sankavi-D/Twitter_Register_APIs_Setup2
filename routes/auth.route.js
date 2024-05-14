@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/multer');
 const authenticateToken = require('../middleware/authentication');
-const { userRegisterValidation, passwordValidation, imageValidation, usernameValidation, notificationValidation, userLoginValidation } = require('../validation/validateFunction');
-const { userRegister, userEmailVerify, passwordSetup, uploadImage, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost } = require('../controllers/auth.controller');
+const { userRegisterValidation, passwordValidation, imageValidation, usernameValidation, notificationValidation, userLoginValidation, dateValidation } = require('../validation/validateFunction');
+const { userRegister, userEmailVerify, passwordSetup, uploadImage, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost, updateUserAge } = require('../controllers/auth.controller');
 
 // User registration
 router.post('/register', userRegisterValidation, userRegister);
@@ -15,7 +15,7 @@ router.get('/verify-email', userEmailVerify);
 router.post('/password-setup', passwordValidation, authenticateToken, passwordSetup);
 
 // Profile Picture Setup
-router.post('/image-setup', imageValidation, upload.single('image'), authenticateToken, uploadImage);
+router.post('/image-setup', imageValidation, upload.array('image'), authenticateToken, uploadImage);
 
 // Suggest Username
 router.post('/suggest-username', authenticateToken, suggestUsername);
@@ -37,5 +37,8 @@ router.post('/login', userLoginValidation, userLogin);
 
 // Uploading new post
 router.post('/create-post', authenticateToken, createPost);
+
+// Route to update user's age
+router.put('/:userId/updateAge', dateValidation, updateUserAge);
 
 module.exports = router;

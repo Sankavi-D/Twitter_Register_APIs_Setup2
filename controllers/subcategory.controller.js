@@ -62,7 +62,6 @@ const getOneSubcategory = async (req, res) => {
     }
 };
 
-//
 const updateSubcategory = async (req, res) => {
     try {
         console.log("Updating a Subcategory");
