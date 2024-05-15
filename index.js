@@ -7,13 +7,18 @@ const categoryRoutes = require('./routes/category.route');
 const subcategoryRoutes = require('./routes/subcategory.route');
 const followRoutes = require('./routes/follow.route');
 const profileRoutes = require('./routes/profile.route');
+const mailRoutes = require('./routes/mail.route');
 const schedule = require('node-schedule');
 const updateAges = require('./services/cronServices');
+const bodyParser = require('body-parser');
 const app = express();
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
 
 // Serve static files from the 'uploads' directory
 const imagePath = path.join(__dirname, '/uploads');
@@ -38,7 +43,7 @@ mongoose.connect(MONGODB_URI, {
     }).catch((error) => {
         console.error("Error connecting to MongoDB:", error);
         process.exit(1);
-    });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/auth/languages', languageRoutes);
@@ -46,6 +51,7 @@ app.use('/api/auth/category', categoryRoutes);
 app.use('/api/auth/subcategory', subcategoryRoutes);
 app.use('/api/auth/follow', followRoutes);
 app.use('/api/auth/profile', profileRoutes);
+app.use('/send', mailRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to Twitter App');

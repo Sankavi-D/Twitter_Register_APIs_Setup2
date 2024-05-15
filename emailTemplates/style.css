@@ -1,0 +1,11 @@
+.app-background {
+    background-color: aquamarine;
+    font-family: "Roboto";
+    padding: 20px;
+    text-align: center;
+}
+
+.custom-style {
+    color: black;
+    text-decoration: none;
+}

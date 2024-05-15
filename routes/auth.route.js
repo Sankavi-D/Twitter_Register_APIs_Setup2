@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/multer');
-const authenticateToken = require('../middleware/authentication');
+const {authenticateToken, validateToken} = require('../middleware/authentication');
 const { userRegisterValidation, passwordValidation, imageValidation, usernameValidation, notificationValidation, userLoginValidation, dateValidation } = require('../validation/validateFunction');
-const { userRegister, userEmailVerify, passwordSetup, uploadImage, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost, updateUserAge } = require('../controllers/auth.controller');
+const { userRegister, userEmailVerify, passwordSetup, uploadImage, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost, updateUserAge, activateAccount } = require('../controllers/auth.controller');
+const sendTemplateMail = require('../controllers/mail.controller');
 
 // User registration
-router.post('/register', userRegisterValidation, userRegister);
+router.post('/register', userRegisterValidation, userRegister, sendTemplateMail);
 
 // Verify email
 router.get('/verify-email', userEmailVerify);
@@ -40,5 +41,8 @@ router.post('/create-post', authenticateToken, createPost);
 
 // Route to update user's age
 router.put('/:userId/updateAge', dateValidation, updateUserAge);
+
+// Activate User's Account
+router.get('/activate-account', validateToken, activateAccount);
 
 module.exports = router;

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-// const categoryValidationSchema = require('../validation/categoryValidation');
-const authenticateToken = require('../middleware/authentication');
+const { authenticateToken } = require('../middleware/authentication');
 const { createCategory, gettingAllCategory, getOneCategory, updateCategory, deleteCategory } = require('../controllers/category.controller');
 const { categoryValidation } = require('../validation/validateFunction');
 

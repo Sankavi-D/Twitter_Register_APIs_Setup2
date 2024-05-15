@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // const followValidationSchema = require('../validation/followValidaion');
-const authenticateToken = require('../middleware/authentication');
+const { authenticateToken } = require('../middleware/authentication');
 const { getRegisteredUsers, followUsers } = require('../controllers/follow.controller');
 const { followValidation } = require('../validation/validateFunction');
 

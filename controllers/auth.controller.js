@@ -6,8 +6,27 @@ const User = require('../models/userModel');
 const Image = require('../models/imageModel');
 const Profile = require('../models/profilePicture');
 const Post = require('../models/postModel');
+const sendTemplateMail = require('./mail.controller');
 
-const userRegister =  async (req, res) => {
+const validateToken = (req, res) => {
+  console.log("Validation token...");
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    console.log('req.user: ', req.user);
+    // next();
+  } catch (error) {
+    return res.status(401).send('Invalid or expired token');
+  }
+};
+
+const userRegister =  async (req, res, next) => {
   try {
     console.log("Registration Started");
     const { name, email, dob } = req.body;
@@ -26,8 +45,11 @@ const userRegister =  async (req, res) => {
     console.log(secretKey);
     const verificationToken = jwt.sign({ _id: user._id, email }, secretKey, { expiresIn: '24h' });
     console.log('Verification token:', verificationToken);
-
-    res.status(201).json({ status_code: 201, user, verificationToken });
+    
+    res.status(201).json({ status_code: 201, message: 'Verfication mail sent, check your mail to activate it' , user });
+    
+    req.verificationToken = verificationToken;
+    next();
   } catch (error) {
     console.error('Error during registration:', error.message);
     res.status(500).json({ status_code: 500, error: 'Registration failed' });
@@ -46,6 +68,7 @@ const userEmailVerify = async (req, res) => {
     const secretKey = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secretKey);
     console.log('decoded: ', decoded)
+    
     const user = await User.findOne({ _id: decoded._id});
     await User.findByIdAndUpdate(user._id, { isEmailVerified: true });
     
@@ -98,38 +121,6 @@ const uploadImage = async (req, res) => {
     res.status(201).json({ status_code: 201, message: 'Images uploaded successfully', uploadedImages: savedImages });
   } catch (error) {
     
-    console.log("Error on storing images in the database:", error);
-    res.status(500).json({ status_code: 500, message: error.message });
-  }
-};
-
-const uploadImageOld = async (req, res) => {
-  try {
-    console.log("DB Image storing function initiated");
-    const { type } = req.body;
-
-    const images = req.files.map(file => file.path); // Get an array of paths for the uploaded images
-   
-    const user = req.user;
-    const userId = user._id;
-
-    const savedImages = await new Image({ userId: userId, images, type });
-    console.log('saved images: ', savedImages);
-
-    // Update the user document with the imageIds
-    user.imageIds = savedImages._id;
-    await user.save();
-
-     // Update profile or post with the imageIds
-     if (type === 'profile') {
-      await Profile.findOneAndUpdate({ userId: user._id }, { profileImageIds: savedImages._id });
-    } else if (type === 'post') {
-      await Post.findOneAndUpdate({ userId }, { postImageIds: savedImages._id });
-    }
-
-  console.log("Images saved successfully:", savedImages);
-  res.status(201).json({ status_code: 201, message: 'Images uploaded successfully', uploadedImages: savedImages });
-  } catch (error) {
     console.log("Error on storing images in the database:", error);
     res.status(500).json({ status_code: 500, message: error.message });
   }
@@ -388,6 +379,11 @@ const updateUserAge = async (req, res) => {
   }
 };
 
+const activateAccount = async (req, res) => {
+  console.log('Account activated');
+  res.send('Your account has been activated successfully.');
+};
+
 module.exports = {
   userRegister,
   userEmailVerify,
@@ -400,5 +396,6 @@ module.exports = {
   importUserData,
   userLogin,
   createPost,
-  updateUserAge
+  updateUserAge,
+  activateAccount
 };

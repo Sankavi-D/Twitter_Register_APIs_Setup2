@@ -94,14 +94,16 @@ const categorySelectionSchema = Joi.object({
 });
 
 const subcategorySelectionSchema = Joi.object({
-    subcategoryName: Joi.string().required().messages({
-        'string.base': 'Subcategory name must be a string',
-        'any.required': 'Subcategory name is required: Cannot be empty'
-      }),
-      categoryId: Joi.string().required().messages({
+    subcategoryName: Joi.array().items(Joi.string().required()).min(1).required().messages({
+        'array.base': 'Subcategory names should be an array of strings.',
+        'array.min': 'There should be at least one subcategory name.',
+        'string.empty': 'Subcategory name cannot be empty.',
+        'any.required': 'Subcategory names are required.'
+    }),
+    categoryId: Joi.string().required().messages({
         'string.base': 'Category Id must be a string',
         'any.required': 'Category Id is required: Cannot be empty'
-      }),
+    }),
 });
 
 const subcategoryUpdateSchema = Joi.object({
