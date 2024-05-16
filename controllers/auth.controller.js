@@ -6,7 +6,6 @@ const User = require('../models/userModel');
 const Image = require('../models/imageModel');
 const Profile = require('../models/profilePicture');
 const Post = require('../models/postModel');
-const sendTemplateMail = require('./mail.controller');
 
 const validateToken = (req, res) => {
   console.log("Validation token...");
@@ -46,7 +45,7 @@ const userRegister =  async (req, res, next) => {
     const verificationToken = jwt.sign({ _id: user._id, email }, secretKey, { expiresIn: '24h' });
     console.log('Verification token:', verificationToken);
     
-    res.status(201).json({ status_code: 201, message: 'Verfication mail sent, check your mail to activate it' , user });
+    res.status(201).json({ status_code: 201, message: 'Verification mail sent, check your mail to activate it' , user });
     
     req.verificationToken = verificationToken;
     next();
@@ -356,7 +355,7 @@ const createPost = async (req, res) => {
 };
 
 // Function to update user's age
-const updateUserAge = async (req, res) => {
+const updateUserDobAndAge = async (req, res) => {
   try {
     console.log("DOB updatation started...");
     const userId = req.params.userId;
@@ -396,6 +395,6 @@ module.exports = {
   importUserData,
   userLogin,
   createPost,
-  updateUserAge,
+  updateUserDobAndAge,
   activateAccount
 };

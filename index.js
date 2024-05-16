@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig'); // Import the Swagger configuration
 const authRoutes = require('./routes/auth.route');
 const languageRoutes = require('./routes/language.route');
 const categoryRoutes = require('./routes/category.route');
@@ -10,15 +12,11 @@ const profileRoutes = require('./routes/profile.route');
 const mailRoutes = require('./routes/mail.route');
 const schedule = require('node-schedule');
 const updateAges = require('./services/cronServices');
-const bodyParser = require('body-parser');
 const app = express();
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
 
 // Serve static files from the 'uploads' directory
 const imagePath = path.join(__dirname, '/uploads');
@@ -56,6 +54,9 @@ app.use('/send', mailRoutes);
 app.get('/', (req, res) => {
     res.send('Welcome to Twitter App');
 });
+
+// Serve Swagger documentation at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handling middleware for unmatched routes
 app.use((req, res, next) => {

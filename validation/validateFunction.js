@@ -51,12 +51,24 @@ const passwordSchema = Joi.object({
     })
 });
 
-const imageSchema = Joi.object({
-    image: Joi.string().required().messages({
-      'any.required': 'Image is required',
-      'string.base': 'Invalid image type'
+const imageSchema = Joi.object({ 
+    image: Joi.array().items(
+        Joi.object({
+            path: Joi.string().required().messages({
+                'string.base': 'Invalid image type',
+                'any.required': 'Image is required'
+            }),
+        })
+    ).min(1).required().messages({
+        'array.base': 'Images should be an array of files',
+        'array.min': 'At least one image is required',
+        'any.required': 'Images are required'
     }),
-    type: Joi.string().valid('profile', 'post').required()
+    type: Joi.string().valid('profile', 'post').required().messages({
+          'any.required': 'Type is required',
+          'any.only': 'Type must be either "profile" or "post"',
+          'string.base': 'Type must be a string'
+        }),
 });
 
 const usernameSchema = Joi.object({
@@ -107,9 +119,11 @@ const subcategorySelectionSchema = Joi.object({
 });
 
 const subcategoryUpdateSchema = Joi.object({
-    subcategoryName: Joi.string().required().messages({
-        'string.base': 'Subcategory name must be a string',
-        'any.required': 'Subcategory name is required: Cannot be empty'
+    subcategoryName: Joi.array().items(Joi.string().required()).min(1).required().messages({
+      'array.base': 'Subcategory names should be an array of strings.',
+      'array.min': 'There should be at least one subcategory name.',
+      'string.empty': 'Subcategory name cannot be empty.',
+      'any.required': 'Subcategory names are required.'
       })
 });
 
