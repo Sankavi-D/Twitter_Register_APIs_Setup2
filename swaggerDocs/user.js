@@ -4,12 +4,8 @@
  *   name: User Registration
  *   description: User registration operations
  */
-/**
- * @swagger
- * /api/auth/reg:
- *  post:
- * summ
- */
+
+
 /**
  * @swagger
  * /api/auth/register:
@@ -156,6 +152,82 @@
  *                   example: Internal server error
  */
 
+
+/**
+ * @swagger
+ * /api/auth/video-setup:
+ *   post:
+ *     summary: Upload a video
+ *     description: Uploads a video file for a user.
+ *     tags:
+ *       - Videos
+ *     security:
+ *       - JWTAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Title of the video.
+ *               video:
+ *                 type: string
+ *                 format: binary
+ *                 description: Video file to upload.
+ *             required:
+ *               - title
+ *               - video
+ *     responses:
+ *       201:
+ *         description: Video uploaded successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status_code:
+ *                   type: integer
+ *                   example: 201
+ *                 message:
+ *                   type: string
+ *                   example: Video uploaded successfully.
+ *                 uploadedVideo:
+ *                   $ref: '#/components/schemas/Video'
+ *       400:
+ *         description: Bad request. No file uploaded or invalid file type.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status_code:
+ *                   type: integer
+ *                   example: 400
+ *                 message:
+ *                   type: string
+ *                   example: No file uploaded or invalid file type.
+ *     produces:
+ *       - application/json
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: title
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: Example Video Title
+ *       - in: formData
+ *         name: video
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: binary
+ *           example: file.mp4
+ */
 
 
 /**

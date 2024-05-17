@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/multer');
+const { uploadImage, uploadVideo, checkFiles, checkImageFiles, checkVideoFile } = require('../middleware/multer');
 const {authenticateToken, validateToken} = require('../middleware/authentication');
-const { userRegisterValidation, passwordValidation, imageValidation, usernameValidation, notificationValidation, userLoginValidation, dateValidation } = require('../validation/validateFunction');
-const { userRegister, userEmailVerify, passwordSetup, uploadImage, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost, updateUserDobAndAge, activateAccount } = require('../controllers/auth.controller');
+const { userRegisterValidation, passwordValidation, imageValidation, uploadVideoValidation, usernameValidation, notificationValidation, userLoginValidation, dateValidation } = require('../validation/validateFunction');
+const { userRegister, userEmailVerify, passwordSetup, uploadImageHandler, uploadVideoHandler, suggestUsername, usernameSetup, notificationSetup, exportUserData, importUserData, userLogin, createPost, updateUserDobAndAge, activateAccount } = require('../controllers/auth.controller');
 const sendTemplateMail = require('../controllers/mail.controller');
 
 // User registration
@@ -15,8 +15,11 @@ router.get('/verify-email', userEmailVerify);
 // Password Setup
 router.post('/password-setup', passwordValidation, authenticateToken, passwordSetup);
 
-// Profile Picture Setup
-router.post('/image-setup', imageValidation, upload.array('image'), authenticateToken, uploadImage);
+// Upload more than one Image Setup
+router.post('/image-setup', authenticateToken, checkImageFiles,  uploadImageHandler);
+
+// Upload video setup
+router.post('/video-setup', authenticateToken, uploadVideoValidation, checkVideoFile, uploadVideoHandler);
 
 // Suggest Username
 router.post('/suggest-username', authenticateToken, suggestUsername);
@@ -31,7 +34,7 @@ router.post('/notification', notificationValidation, authenticateToken, notifica
 router.get('/export', exportUserData);
 
 // Import User Data via Excel
-router.post('/import', upload.single('file'), importUserData);
+// router.post('/import', upload.single('file'), importUserData);
 
 // User Login
 router.post('/login', userLoginValidation, userLogin);

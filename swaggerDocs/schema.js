@@ -54,6 +54,21 @@
  *       example:
  *         image: "base64-encoded-image-string"
  *         type: "profile"
+ *     Video:
+ *       type: object
+ *       required:
+ *         - videoName
+ *         - title
+ *       properties:
+ *         videoName:
+ *           type: string
+ *           description: Name of the uploaded video file.
+ *         title:
+ *           type: string
+ *           description: Title of the video.
+ *       example:
+ *         videoName: uploaded-video-123.mp4
+ *         title: Example Video Title
  *     Username:
  *       type: object
  *       required:

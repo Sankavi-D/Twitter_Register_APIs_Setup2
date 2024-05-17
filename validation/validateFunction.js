@@ -71,6 +71,13 @@ const imageSchema = Joi.object({
         }),
 });
 
+const videoUploadSchema = Joi.object({
+  title: Joi.string().required().messages({
+    'string.empty': 'Title is required: Cannot be empty',
+    'any.required': 'Title is required'
+  })
+});
+
 const usernameSchema = Joi.object({
     username: Joi.string().required().min(3).max(30).pattern(/^[a-zA-Z0-9_]+$/)
         .messages({
@@ -157,6 +164,7 @@ const dateSchema = Joi.object({
 const userRegisterValidation = validateSchema(userSchema);
 const passwordValidation = validateSchema(passwordSchema);
 const imageValidation = validateImageSchema(imageSchema);
+const uploadVideoValidation = validateImageSchema(videoUploadSchema);
 const usernameValidation = validateSchema(usernameSchema);
 const notificationValidation = validateSchema(notificationSchema);
 const languageValidation = validateSchema(languageSelectionSchema);
@@ -171,6 +179,7 @@ module.exports = {
     userRegisterValidation,
     passwordValidation,
     imageValidation,
+    uploadVideoValidation,
     usernameValidation,
     notificationValidation,
     languageValidation,

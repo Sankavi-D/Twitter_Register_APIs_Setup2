@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Image' // Reference to the Image model
     },
+    videoId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Video'
+    },
     username: {
         type: String,
         unique: true, // Ensure usernames are unique

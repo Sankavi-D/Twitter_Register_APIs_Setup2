@@ -4,6 +4,7 @@ const excel = require('exceljs');
 const fs = require('fs');
 const User = require('../models/userModel');
 const Image = require('../models/imageModel');
+const Video = require('../models/videoModel');
 const Profile = require('../models/profilePicture');
 const Post = require('../models/postModel');
 
@@ -93,7 +94,7 @@ const passwordSetup = async (req, res) => {
     }
 };
 
-const uploadImage = async (req, res) => {
+const uploadImageHandler = async (req, res) => {
   try {
     console.log("DB Image storing function initiated");
     const user = req.user;
@@ -110,10 +111,10 @@ const uploadImage = async (req, res) => {
 
     if (type === 'profile') {
       await Profile.findOneAndUpdate({ userId: user._id }, { profileImageId: savedImages._id });
-      console.log(Profile);
+      console.log('Profile: ', Profile);
     } else if (type === 'post') {
       await Post.findOneAndUpdate({ userId: user._id }, { postImageId: savedImages._id });
-      console.log(`post: `, Post);
+      console.log('Post: ', Post);
     }
 
     console.log("Images saved successfully:", savedImages);
@@ -121,6 +122,27 @@ const uploadImage = async (req, res) => {
   } catch (error) {
     
     console.log("Error on storing images in the database:", error);
+    res.status(500).json({ status_code: 500, message: error.message });
+  }
+};
+
+const uploadVideoHandler = async (req, res) => {
+  try {
+    console.log("DB Video storing function initiated");
+    const user = req.user;
+    const { title } = req.body;
+    const video = {
+      userId: user._id,
+      videoName: req.file.filename,
+      title: title
+    };
+
+    const savedVideo = await Video.create(video);
+
+    console.log("Video saved successfully:", savedVideo);
+    res.status(201).json({ status_code: 201, message: 'Video uploaded successfully', uploadedVideo: savedVideo });
+  } catch (error) {
+    console.log("Error on storing video in the database:", error);
     res.status(500).json({ status_code: 500, message: error.message });
   }
 };
@@ -387,7 +409,8 @@ module.exports = {
   userRegister,
   userEmailVerify,
   passwordSetup,
-  uploadImage,
+  uploadImageHandler,
+  uploadVideoHandler,
   suggestUsername,
   usernameSetup,
   notificationSetup,
